@@ -3,14 +3,12 @@ import ImageGalleryItem from './ImageGalleryItem';
 
 class ImageGallery extends Component {
   render() {
+    const { images, onClick } = this.props;
+
     return (
       <ul className="ImageGallery">
-        {this.props.images.map(image => (
-          <ImageGalleryItem
-            key={image.id}
-            image={image}
-            onClick={this.props.onClick}
-          />
+        {images.map((image, index) => (
+          <ImageGalleryItem key={index} image={image} onClick={onClick} />
         ))}
       </ul>
     );

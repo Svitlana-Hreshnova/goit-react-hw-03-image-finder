@@ -4,6 +4,7 @@ import ImageGallery from './ImageGallery';
 import Button from './Button';
 import Loader from './Loader';
 import Modal from './Modal';
+// import fetchImages from './Api';
 
 class App extends Component {
   state = {
@@ -13,11 +14,34 @@ class App extends Component {
     isLoading: false,
     showModal: false,
     largeImageURL: '',
+    loadMore: true,
   };
 
-  handleSearchSubmit = query => {
-    this.setState({ query, page: 1, images: [] }, this.fetchImages);
-  };
+  // componentDidUpdate(prevProps, prevState) {
+  //   if (
+  //     this.state.page !== prevState.page ||
+  //     this.state.query !== prevState.query
+  //   ) {
+  //     this.fetchImages();
+  //   }
+  // }
+
+  // fetchImages = () => {
+  //   const { page, query } = this.state;
+
+  //   this.setState({ isLoading: true });
+
+  //   fetchImages(page, query)
+  //     .then(data =>
+  //       this.setState(prevState => ({
+  //         images: [...prevState.images, ...data.images],
+  //         page: data.nextPage,
+  //         loadMore: data.hasMore,
+  //       }))
+  //     )
+  //     .catch(error => console.error('Error fetching images:', error))
+  //     .finally(() => this.setState({ isLoading: false }));
+  // };
 
   fetchImages = () => {
     const { page, query } = this.state;
@@ -32,10 +56,15 @@ class App extends Component {
         this.setState(prevState => ({
           images: [...prevState.images, ...data.hits],
           page: prevState.page + 1,
+          loadMore: prevState.page < Math.ceil(data.totalHits / 12),
         }))
       )
       .catch(error => console.error('Error fetching images:', error))
       .finally(() => this.setState({ isLoading: false }));
+  };
+
+  handleSearchSubmit = query => {
+    this.setState({ query, page: 1, images: [] }, this.fetchImages);
   };
 
   handleLoadMoreClick = () => {
@@ -51,14 +80,15 @@ class App extends Component {
   };
 
   render() {
-    const { images, isLoading, showModal, largeImageURL } = this.state;
+    const { images, isLoading, showModal, largeImageURL, loadMore } =
+      this.state;
 
     return (
       <div className="App">
         <Searchbar onSubmit={this.handleSearchSubmit} />
         <ImageGallery images={images} onClick={this.handleImageClick} />
         {isLoading && <Loader />}
-        {images.length > 0 && !isLoading && (
+        {images.length > 0 && !isLoading && loadMore && (
           <Button onClick={this.handleLoadMoreClick} />
         )}
         {showModal && (
