@@ -4,7 +4,7 @@ import ImageGallery from './ImageGallery';
 import Button from './Button';
 import Loader from './Loader';
 import Modal from './Modal';
-// import fetchImages from './Api';
+import fetchImages from './Api';
 
 class App extends Component {
   state = {
@@ -14,69 +14,60 @@ class App extends Component {
     isLoading: false,
     showModal: false,
     largeImageURL: '',
-    loadMore: true,
+    loadMore: false,
+    error: null,
   };
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (
-  //     this.state.page !== prevState.page ||
-  //     this.state.query !== prevState.query
-  //   ) {
-  //     this.fetchImages();
-  //   }
-  // }
-
-  // fetchImages = () => {
-  //   const { page, query } = this.state;
-
-  //   this.setState({ isLoading: true });
-
-  //   fetchImages(page, query)
-  //     .then(data =>
-  //       this.setState(prevState => ({
-  //         images: [...prevState.images, ...data.images],
-  //         page: data.nextPage,
-  //         loadMore: data.hasMore,
-  //       }))
-  //     )
-  //     .catch(error => console.error('Error fetching images:', error))
-  //     .finally(() => this.setState({ isLoading: false }));
-  // };
-
-  fetchImages = () => {
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.state.page !== prevState.page ||
+      this.state.query !== prevState.query
+    ) {
+      this.getPhotos();
+    }
+  }
+  getPhotos = async () => {
     const { page, query } = this.state;
-    const apiKey = '40298326-3542dba9bdb0915da3eae5d6c';
-    const apiUrl = `https://pixabay.com/api/?q=${query}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=12`;
-
     this.setState({ isLoading: true });
-
-    fetch(apiUrl)
-      .then(response => response.json())
-      .then(data =>
-        this.setState(prevState => ({
-          images: [...prevState.images, ...data.hits],
-          page: prevState.page + 1,
-          loadMore: prevState.page < Math.ceil(data.totalHits / 12),
-        }))
-      )
-      .catch(error => console.error('Error fetching images:', error))
-      .finally(() => this.setState({ isLoading: false }));
+    try {
+      const { hits, totalHits } = await fetchImages(query, page);
+      if (hits.length === 0) {
+        return alert('We dont found');
+      }
+      this.setState(prevState => ({
+        images: [...prevState.images, ...hits],
+        loadMore: page < Math.ceil(totalHits / 12),
+      }));
+    } catch (error) {
+      this.setState({ error: error.message });
+    } finally {
+      this.setState({ isLoading: false });
+    }
   };
-
   handleSearchSubmit = query => {
-    this.setState({ query, page: 1, images: [] }, this.fetchImages);
+    this.setState({ query, page: 1, images: [] });
   };
-
   handleLoadMoreClick = () => {
-    this.fetchImages();
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
-
   handleImageClick = largeImageURL => {
     this.setState({ showModal: true, largeImageURL });
   };
-
   handleCloseModal = () => {
     this.setState({ showModal: false, largeImageURL: '' });
+  };
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  handleKeyDown = event => {
+    if (event.code === 'Escape') {
+      this.handleCloseModal();
+    }
   };
 
   render() {
