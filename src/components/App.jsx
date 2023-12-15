@@ -56,28 +56,6 @@ class App extends Component {
     this.setState({ showModal: false, largeImageURL: '' });
   };
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-    window.addEventListener('click', this.handleClickOutside);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-    window.removeEventListener('click', this.handleClickOutside);
-  }
-
-  handleKeyDown = event => {
-    if (event.code === 'Escape') {
-      this.handleCloseModal();
-    }
-  };
-
-  handleClickOutside = event => {
-    if (event.target.classList.contains('Overlay')) {
-      this.handleCloseModal();
-    }
-  };
-
   render() {
     const { images, isLoading, showModal, largeImageURL, loadMore } =
       this.state;

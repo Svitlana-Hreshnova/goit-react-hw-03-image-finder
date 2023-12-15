@@ -5,6 +5,22 @@ class Modal extends Component {
     event.stopPropagation();
   };
 
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleKeyDown);
+  }
+  handleKeyDown = event => {
+    if (event.code === 'Escape') {
+      this.props.onClose();
+    }
+  };
+  handleClickOutside = event => {
+    if (event.target === event.currentTarget) {
+      this.props.onClose();
+    }
+  };
   render() {
     const { largeImageURL, onClose } = this.props;
 
